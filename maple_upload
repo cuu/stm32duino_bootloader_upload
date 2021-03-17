@@ -2,6 +2,18 @@
 
 #set -e
 
+architecture="unknow"
+case $(uname -m) in
+    x86_64) architecture="amd64" ;;
+    armv7l)    dpkg --print-architecture | grep -q "arm64" && architecture="aarch64" || architecture="armhf" ;;
+    arm)    dpkg --print-architecture | grep -q "arm64" && architecture="aarch64" || architecture="armhf" ;;
+esac
+
+
+if [ $architecture = "unknow" ]; then
+	echo "unknow architecture,exiting..."
+	exit
+fi
 
 
 if [ $# -lt 4 ]; then
@@ -25,9 +37,11 @@ DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 # You may need to tune this to your system
 # 750ms to 1500ms seems to work on my Mac
 
-
+if [ $architecture == "amd64" ]; then
 "${DIR}/upload-reset.elf" ${dummy_port_fullpath} 750
-
+else
+"${DIR}/deb_packages/$architecture/upload-reset.elf" ${dummy_port_fullpath} 750
+fi
 
 DFU_UTIL=/usr/bin/dfu-util
 #DFU_UTIL=${DIR}/dfu-util/dfu-util
